@@ -1,0 +1,35 @@
+<resources>
+    <string name="app_name">MovieRent</string>
+    <string name="title_activity_login">Sign in</string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="error_invalid_email">This email address is invalid</string>
+    <string name="error_invalid_password">This password is too short</string>
+    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="permission_rationale">"Contacts permissions are needed for providing email
+        completions."
+    </string>
+    <string name="first_name">First Name</string>
+    <string name="last_name">Last Name</string>
+    <string name="action_register">Register</string>
+    <string name="login_ws">login/dologin</string>
+    <string name="ws">http://10.0.0.2:8080/rentmoviews</string>
+    <string name="register_ws">register/doRegister</string>
+    <string name="all_movies_ws">movies/getAllMovies</string>
+    <string name="movie_name">Movie Name</string>
+    <string name="movie_overview">Overview</string>
+    <string name="movie_category">Category</string>
+    <string name="movie_stock">Stock</string>
+    <string name="title_activity_categories_admin">CategoriesAdminActivity</string>
+    <string name="categories_admin">Manager Categories</string>
+    <string name="remove">Remove</string>
+    <string name="edit">Edit</string>
+    <string name="prompt_new_category_name">New category name</string>
+    <string name="update">Update</string>
+    <string name="name">Name</string>
+</resources>
