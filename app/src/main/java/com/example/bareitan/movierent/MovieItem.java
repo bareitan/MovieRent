@@ -1,28 +1,71 @@
 package com.example.bareitan.movierent;
 
 import android.content.Intent;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 /**
  * Created by bareitan on 31/03/2017.
  */
 
-private class MovieItem {
+class MovieItem implements Parcelable{
     private String name;
     private String overview;
     private String categoryName;
     private String tmdbID;
-    private int year;
+    private String year;
 
 
-    private int categoryID;
+
     private String thumbnail;
+    public MovieItem(){
+
+    }
 
 
-    public int getYear() {
+    protected MovieItem(Parcel in) {
+        name = in.readString();
+        overview = in.readString();
+        categoryName = in.readString();
+        tmdbID = in.readString();
+        year = in.readString();
+        thumbnail = in.readString();
+        stock = in.readInt();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(name);
+        dest.writeString(overview);
+        dest.writeString(categoryName);
+        dest.writeString(tmdbID);
+        dest.writeString(year);
+        dest.writeString(thumbnail);
+        dest.writeInt(stock);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Creator<MovieItem> CREATOR = new Creator<MovieItem>() {
+        @Override
+        public MovieItem createFromParcel(Parcel in) {
+            return new MovieItem(in);
+        }
+
+        @Override
+        public MovieItem[] newArray(int size) {
+            return new MovieItem[size];
+        }
+    };
+
+    public String getYear() {
         return year;
     }
 
-    public void setYear(int year) {
+    public void setYear(String year) {
         this.year = year;
     }
 
@@ -65,11 +108,4 @@ private class MovieItem {
         this.stock = stock;
     }
 
-    public int getCategoryID() {
-        return categoryID;
-    }
-
-    public void setCategoryID(int categoryID) {
-        this.categoryID = categoryID;
-    }
 }

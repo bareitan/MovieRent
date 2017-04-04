@@ -44,6 +44,9 @@
     <string name="search">Search</string>
     <string name="tmdb_key">762dddd78561845115597c1a5ceb8247</string>
     <string name="tmdb_search_api">https://api.themoviedb.org/3/search/movie</string>
+    <string name="tmdb_movie_api">https://api.themoviedb.org/3/movie/</string>
+    <string name="poster_path">http://image.tmdb.org/t/p/w185//</string>
     <string name="enter_movie_name">Enter a movie name...</string>
     <string name="search_tmdb">Import from TMDB</string>
+    <string name="thumb_url">Thumnail image url</string>
 </resources>

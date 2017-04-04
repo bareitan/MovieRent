@@ -45,24 +45,8 @@ public class MoviesActivity extends AppCompatActivity implements MoviesAdapter.L
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         progressBar = (ProgressBar) findViewById(R.id.progress_bar);
-        String RENT_WS = getString(R.string.ws);
-        String MOVIES_WS = getString(R.string.all_movies_ws);
-        try {
-            Uri builtUri = Uri.parse(RENT_WS).buildUpon()
-                    .appendEncodedPath(MOVIES_WS)
-                    .build();
 
-            URL url = null;
-            try {
-                url = new URL(builtUri.toString());
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
-
-            new DownloadTask().execute(url.toString());
-        } catch(Exception e){
-            e.printStackTrace();
-        }
+        new DownloadTask().execute();
     }
 
     @Override
@@ -108,18 +92,37 @@ public class MoviesActivity extends AppCompatActivity implements MoviesAdapter.L
         startActivity(intent);
     }
 
-    public class DownloadTask extends AsyncTask<String, Void, Integer>{
+    public class DownloadTask extends AsyncTask<Void, Void, Integer>{
+        String downloadUri;
         @Override
         protected void onPreExecute() {
             progressBar.setVisibility(View.VISIBLE);
+
+            String RENT_WS = getString(R.string.ws);
+            String MOVIES_WS = getString(R.string.all_movies_ws);
+            try {
+                Uri builtUri = Uri.parse(RENT_WS).buildUpon()
+                        .appendEncodedPath(MOVIES_WS)
+                        .build();
+
+                URL url = null;
+                try {
+                    url = new URL(builtUri.toString());
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
+                downloadUri = url.toString();
+            } catch(Exception e){
+                e.printStackTrace();
+            }
         }
 
         @Override
-        protected Integer doInBackground(String... params) {
+        protected Integer doInBackground(Void... params) {
             Integer result = 0;
             HttpURLConnection urlConnection;
             try {
-                URL url = new URL(params[0]);
+                URL url = new URL(downloadUri);
                 urlConnection = (HttpURLConnection) url.openConnection();
                 int statusCode = urlConnection.getResponseCode();
 
