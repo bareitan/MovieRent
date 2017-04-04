@@ -17,19 +17,33 @@
     <string name="first_name">First Name</string>
     <string name="last_name">Last Name</string>
     <string name="action_register">Register</string>
-    <string name="login_ws">login/dologin</string>
-    <string name="ws">http://10.0.0.2:8080/rentmoviews</string>
-    <string name="register_ws">register/doRegister</string>
+
     <string name="all_movies_ws">movies/getAllMovies</string>
     <string name="movie_name">Movie Name</string>
     <string name="movie_overview">Overview</string>
     <string name="movie_category">Category</string>
     <string name="movie_stock">Stock</string>
     <string name="title_activity_categories_admin">CategoriesAdminActivity</string>
-    <string name="categories_admin">Manager Categories</string>
+    <string name="categories_admin">Manage Categories</string>
     <string name="remove">Remove</string>
     <string name="edit">Edit</string>
     <string name="prompt_new_category_name">New category name</string>
     <string name="update">Update</string>
     <string name="name">Name</string>
+    <string name="add_movie">Add movie</string>
+
+
+    <string name="login_ws">login/dologin</string>
+    <string name="ws">http://10.0.0.1:8080/rentmoviews</string>
+    <string name="register_ws">register/doRegister</string>
+    <string name="add_movie_ws">movies/addMovie</string>
+    <string name="rent_movie">Rent movie</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="History">History</string>
+    <string name="search">Search</string>
+    <string name="tmdb_key">762dddd78561845115597c1a5ceb8247</string>
+    <string name="tmdb_search_api">https://api.themoviedb.org/3/search/movie</string>
+    <string name="enter_movie_name">Enter a movie name...</string>
+    <string name="search_tmdb">Import from TMDB</string>
 </resources>

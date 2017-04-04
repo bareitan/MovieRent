@@ -4,4 +4,7 @@
 
     <item android:id="@+id/categories_admin"
         android:title="@string/categories_admin"/>
+
+    <item android:id="@+id/add_movie"
+        android:title="@string/add_movie"/>
 </menu>

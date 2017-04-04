@@ -30,7 +30,10 @@
         <activity
             android:name=".CategoriesAdminActivity"
             android:label="@string/title_activity_categories_admin"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".EditProfileActivity" />
+        <activity android:name=".UsersAdminActivity" />
+        <activity android:name=".addMovieFromTMDB"></activity>
     </application>
 
 </manifest>

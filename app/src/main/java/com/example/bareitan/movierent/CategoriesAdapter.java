@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
-import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,8 +11,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import org.w3c.dom.Text;
 
 import java.util.List;
 
@@ -69,7 +66,7 @@ public class CategoriesAdapter extends
             public void onClick(View view) {
                 AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(mContext);
                 LayoutInflater inflater = LayoutInflater.from(mContext);
-                final View dialogView = inflater.inflate(R.layout.dialog_edit_cateogry, null);
+                final View dialogView = inflater.inflate(R.layout.dialog_cateogry, null);
                 dialogBuilder.setView(dialogView);
 
                 final EditText edt = (EditText) dialogView.findViewById(R.id.category_name);
@@ -105,6 +102,7 @@ public class CategoriesAdapter extends
         public TextView categoryNameTV;
         public Button deleteCategoryButton;
         public Button editCategoryButton;
+        public Button addCategoryButton;
 
         public ViewHolder(View itemView) {
             super(itemView);

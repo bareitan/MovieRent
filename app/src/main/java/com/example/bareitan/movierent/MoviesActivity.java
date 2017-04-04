@@ -69,9 +69,20 @@ public class MoviesActivity extends AppCompatActivity implements MoviesAdapter.L
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
             case R.id.categories_admin:
-
                 Intent manageCategoriesIntent = new Intent(this, CategoriesAdminActivity.class);
                 startActivity(manageCategoriesIntent);
+                return true;
+            case R.id.add_movie:
+                Intent addMovieIntent = new Intent(this, AddMovieActivity.class);
+                startActivity(addMovieIntent);
+                return true;
+            case R.id.sign_out:
+                Intent loginIntent = new Intent(this, LoginActivity.class);
+                loginIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                loginIntent.putExtra("sign_out", true);
+                Toast.makeText(this, "You have been signed out successfully", Toast.LENGTH_SHORT).show();
+                startActivity(loginIntent);
+                finish();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -82,6 +93,7 @@ public class MoviesActivity extends AppCompatActivity implements MoviesAdapter.L
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.admin_menu, menu);
+        inflater.inflate(R.menu.user_menu, menu);
         return true;
     }
 
@@ -92,7 +104,7 @@ public class MoviesActivity extends AppCompatActivity implements MoviesAdapter.L
         Intent intent = new Intent(context,detailActivity);
         intent.putExtra("movieName", movieItemList.get(clickedItemIndex).getName());
         intent.putExtra("movieOverview", movieItemList.get(clickedItemIndex).getOverview());
-        intent.putExtra("movieCategory", movieItemList.get(clickedItemIndex).getCategory());
+        intent.putExtra("movieCategory", movieItemList.get(clickedItemIndex).getCategoryName());
         startActivity(intent);
     }
 
@@ -154,7 +166,7 @@ public class MoviesActivity extends AppCompatActivity implements MoviesAdapter.L
                 MovieItem item = new MovieItem();
                 item.setName(movie.optString("movieName"));
                 item.setOverview(movie.optString("overview"));
-                item.setCategory(movie.optString("categoryName"));
+                item.setCategoryName(movie.optString("categoryName"));
                 item.setThumbnail(movie.optString("thumbnail"));
                 movieItemList.add(item);
             }

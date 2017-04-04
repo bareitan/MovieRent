@@ -32,6 +32,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -107,10 +108,16 @@ public class LoginActivity extends AppCompatActivity {
         String password = pref.getString(PREF_PASSWORD, null);
         Boolean remember = pref.getBoolean(PREF_REMEMBER, false);
 
-        if (email != null && password != null && remember != false) {
+        if (email != null && password != null && remember) {
             mEmailView.setText(email);
             mPasswordView.setText(password);
             mSaveDetailsCheckBox.setChecked(true);
+            if(getIntent().hasExtra("sign_out")) {
+                if(!getIntent().getBooleanExtra("sign_out",false))
+                    attemptLogin();
+            }else{
+                attemptLogin();
+            }
         }
     }
 
@@ -211,7 +218,7 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    public class LoginResponse {
+    private class LoginResponse {
         public Boolean loginSucceeded;
         public Boolean isAdmin;
         public String error;
@@ -272,17 +279,6 @@ public class LoginActivity extends AppCompatActivity {
                 e.printStackTrace();
                 return  false;
             }
-
-/*            for (String credential : DUMMY_CREDENTIALS) {
-                String[] pieces = credential.split(":");
-                if (pieces[0].equals(mEmail)) {
-                    // Account exists, return true if the password matches.
-                    return pieces[1].equals(mPassword);
-                }
-            }*/
-
-            // TODO: register the new account here.
-
         }
 
         @Override
@@ -311,6 +307,8 @@ public class LoginActivity extends AppCompatActivity {
                 Intent homeIntent = new Intent(getApplicationContext(),MoviesActivity.class);
                 homeIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(homeIntent);
+                finish();
+                Toast.makeText(LoginActivity.this, "You have logged in successfully", Toast.LENGTH_SHORT).show();
             } else {
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
                 mPasswordView.requestFocus();
