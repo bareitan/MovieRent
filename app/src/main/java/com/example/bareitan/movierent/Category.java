@@ -28,5 +28,20 @@ public class Category {
         this.name = name;
         this.id = id;
     }
+    public Category(){
 
+    }
+    public String toString(){
+        return name;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        Category cat = (Category)obj;
+        if(cat.name == this.name){
+            return true;
+        }else{
+            return false;
+        }
+    }
 }

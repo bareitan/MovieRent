@@ -34,9 +34,10 @@
 
 
     <string name="login_ws">login/dologin</string>
-    <string name="ws">http://10.0.0.1:8080/rentmoviews</string>
+    <string name="ws">http://10.0.0.4:8080/rentmoviews</string>
     <string name="register_ws">register/doRegister</string>
     <string name="add_movie_ws">movies/addMovie</string>
+    <string name="update_movie_ws">movies/updateMovie</string>
     <string name="rent_movie">Rent movie</string>
     <string name="sign_out">Sign Out</string>
     <string name="edit_profile">Edit Profile</string>
@@ -49,4 +50,12 @@
     <string name="enter_movie_name">Enter a movie name...</string>
     <string name="search_tmdb">Import from TMDB</string>
     <string name="thumb_url">Thumnail image url</string>
+    <string name="delete_movie">Delete movie</string>
+    <string name="edit_movie">Edit Movie</string>
+    <string name="delete_ws">movies/deleteMovie</string>
+    <string name="update_movie">Update movie</string>
+    <string name="rent_movie_ws">rent/take</string>
+    <string name="return_movie_ws">rent/return</string>
+    <string name="check_user_rent_ws">rent/usermovierent</string>
+    <string name="all_categories_ws">categories/getAllCategories</string>
 </resources>

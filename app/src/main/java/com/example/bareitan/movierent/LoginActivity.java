@@ -61,6 +61,7 @@ public class LoginActivity extends AppCompatActivity {
     private static final String PREF_EMAIL = "email";
     private static final String PREF_PASSWORD = "password";
     private static final String PREF_REMEMBER = "remember";
+    private static final String PREF_USER_ID = "userid";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -218,14 +219,16 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    private class LoginResponse {
+    class LoginResponse {
         public Boolean loginSucceeded;
         public Boolean isAdmin;
         public String error;
-        public LoginResponse(Boolean loginSucceeded,Boolean isAdmin,String error){
+        public int userID;
+        public LoginResponse(Boolean loginSucceeded,Boolean isAdmin,String error, int userID){
             this.loginSucceeded = loginSucceeded;
             this.isAdmin = isAdmin;
             this.error = error;
+            this.userID = userID;
         }
     }
 
@@ -237,6 +240,7 @@ public class LoginActivity extends AppCompatActivity {
 
         private final String mEmail;
         private final String mPassword;
+        private int mUserId = -1;
 
         UserLoginTask(String email, String password) {
             mEmail = email;
@@ -270,6 +274,7 @@ public class LoginActivity extends AppCompatActivity {
 
                 LoginResponse loginResponse = new Gson().fromJson(r,LoginResponse.class);
                 Log.e("GET_USER",loginResponse.loginSucceeded.toString());
+                mUserId = loginResponse.userID;
                 if(loginResponse.loginSucceeded)
                     return true;
                 else
@@ -294,6 +299,7 @@ public class LoginActivity extends AppCompatActivity {
                             .putString(PREF_EMAIL, mEmail)
                             .putString(PREF_PASSWORD, mPassword)
                             .putBoolean(PREF_REMEMBER, mSaveDetailsCheckBox.isChecked())
+                            .putInt(PREF_USER_ID, mUserId)
                             .commit();
                 } else {
                     getSharedPreferences(PREFS_LOGIN,MODE_PRIVATE)
@@ -310,6 +316,10 @@ public class LoginActivity extends AppCompatActivity {
                 finish();
                 Toast.makeText(LoginActivity.this, "You have logged in successfully", Toast.LENGTH_SHORT).show();
             } else {
+                getSharedPreferences(PREFS_LOGIN,MODE_PRIVATE)
+                        .edit()
+                        .remove(PREF_USER_ID)
+                        .commit();
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
                 mPasswordView.requestFocus();
             }

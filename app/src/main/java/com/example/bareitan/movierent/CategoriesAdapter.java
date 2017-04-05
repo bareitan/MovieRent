@@ -2,7 +2,7 @@ package com.example.bareitan.movierent;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.support.v7.app.AlertDialog;
+import android.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -49,6 +49,7 @@ public class CategoriesAdapter extends
 
         final TextView categroyNameTV = holder.categoryNameTV;
         categroyNameTV.setText(category.getName());
+        holder.categoryID = category.getId();
 
         Button deleteButton = holder.deleteCategoryButton;
         Button editButton = holder.editCategoryButton;
@@ -102,7 +103,7 @@ public class CategoriesAdapter extends
         public TextView categoryNameTV;
         public Button deleteCategoryButton;
         public Button editCategoryButton;
-        public Button addCategoryButton;
+        public int categoryID;
 
         public ViewHolder(View itemView) {
             super(itemView);

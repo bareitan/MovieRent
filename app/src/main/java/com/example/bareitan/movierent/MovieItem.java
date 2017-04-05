@@ -9,13 +9,24 @@ import android.os.Parcelable;
  */
 
 class MovieItem implements Parcelable{
+
+
+    private String id;
     private String name;
     private String overview;
     private String categoryName;
     private String tmdbID;
     private String year;
+    private int stock;
+    private int categoryID;
 
+    public int getCategoryID() {
+        return categoryID;
+    }
 
+    public void setCategoryID(int categoryID) {
+        this.categoryID = categoryID;
+    }
 
     private String thumbnail;
     public MovieItem(){
@@ -24,24 +35,28 @@ class MovieItem implements Parcelable{
 
 
     protected MovieItem(Parcel in) {
+        id = in.readString();
         name = in.readString();
         overview = in.readString();
         categoryName = in.readString();
         tmdbID = in.readString();
         year = in.readString();
-        thumbnail = in.readString();
         stock = in.readInt();
+        categoryID = in.readInt();
+        thumbnail = in.readString();
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(id);
         dest.writeString(name);
         dest.writeString(overview);
         dest.writeString(categoryName);
         dest.writeString(tmdbID);
         dest.writeString(year);
-        dest.writeString(thumbnail);
         dest.writeInt(stock);
+        dest.writeInt(categoryID);
+        dest.writeString(thumbnail);
     }
 
     @Override
@@ -61,6 +76,13 @@ class MovieItem implements Parcelable{
         }
     };
 
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
     public String getYear() {
         return year;
     }
@@ -78,7 +100,7 @@ class MovieItem implements Parcelable{
     }
     public int getStock() { return stock; }
 
-    private int stock;
+
 
     public String getName() {
         return name;

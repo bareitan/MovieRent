@@ -4,9 +4,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.view.menu.ExpandedMenuView;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -36,6 +38,7 @@ public class MoviesActivity extends AppCompatActivity implements MoviesAdapter.L
     private RecyclerView mRecyclerView;
     private MoviesAdapter adapter;
     private ProgressBar progressBar;
+    private SwipeRefreshLayout swipeRefreshLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,9 +46,15 @@ public class MoviesActivity extends AppCompatActivity implements MoviesAdapter.L
         setContentView(R.layout.activity_movies);
 
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mRecyclerView.setLayoutManager(new GridLayoutManager(this,2));
         progressBar = (ProgressBar) findViewById(R.id.progress_bar);
-
+        swipeRefreshLayout =(SwipeRefreshLayout) findViewById(R.id.swipeContainer);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                new DownloadTask().execute();
+            }
+        });
         new DownloadTask().execute();
     }
 
@@ -86,9 +95,7 @@ public class MoviesActivity extends AppCompatActivity implements MoviesAdapter.L
         Context context = MoviesActivity.this;
         Class detailActivity = MovieDetailActivity.class;
         Intent intent = new Intent(context,detailActivity);
-        intent.putExtra("movieName", movieItemList.get(clickedItemIndex).getName());
-        intent.putExtra("movieOverview", movieItemList.get(clickedItemIndex).getOverview());
-        intent.putExtra("movieCategory", movieItemList.get(clickedItemIndex).getCategoryName());
+        intent.putExtra("movie", movieItemList.get(clickedItemIndex));
         startActivity(intent);
     }
 
@@ -155,6 +162,7 @@ public class MoviesActivity extends AppCompatActivity implements MoviesAdapter.L
             } else {
                 Toast.makeText(MoviesActivity.this, "Failed to fetch data!", Toast.LENGTH_SHORT).show();
             }
+            swipeRefreshLayout.setRefreshing(false);
         }
     }
 
@@ -167,10 +175,12 @@ public class MoviesActivity extends AppCompatActivity implements MoviesAdapter.L
             for (int i = 0; i < movies.length(); i++) {
                 JSONObject movie = movies.optJSONObject(i);
                 MovieItem item = new MovieItem();
+                item.setId(movie.optString("movieID"));
                 item.setName(movie.optString("movieName"));
                 item.setOverview(movie.optString("overview"));
                 item.setCategoryName(movie.optString("categoryName"));
                 item.setThumbnail(movie.optString("thumbnail"));
+                item.setStock(movie.optInt("stock"));
                 movieItemList.add(item);
             }
         } catch (JSONException e) {
