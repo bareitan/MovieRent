@@ -38,7 +38,7 @@ public class Category {
     @Override
     public boolean equals(Object obj) {
         Category cat = (Category)obj;
-        if(cat.name == this.name){
+        if(cat.name.equals(this.name)){
             return true;
         }else{
             return false;

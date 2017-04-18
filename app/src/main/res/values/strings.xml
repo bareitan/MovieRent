@@ -18,7 +18,7 @@
     <string name="last_name">Last Name</string>
     <string name="action_register">Register</string>
 
-    <string name="all_movies_ws">movies/getAllMovies</string>
+    <string name="all_movies_ws">movies/getMovieByCategory</string>
     <string name="movie_name">Movie Name</string>
     <string name="movie_overview">Overview</string>
     <string name="movie_category">Category</string>
@@ -56,6 +56,16 @@
     <string name="update_movie">Update movie</string>
     <string name="rent_movie_ws">rent/take</string>
     <string name="return_movie_ws">rent/return</string>
-    <string name="check_user_rent_ws">rent/usermovierent</string>
+    <string name="check_user_rent_ws">rent/userMovieRent</string>
     <string name="all_categories_ws">categories/getAllCategories</string>
+    <string name="add_categories_ws">categories/addCategory</string>
+    <string name="update_categories_ws">categories/updateCategory</string>
+    <string name="delete_categories_ws">categories/deleteCategory</string>
+    <string name="title_activity_history">History</string>
+    <string name="action_settings">Settings</string>
+    <string name="section_format">Hello World from section: %1$d</string>
+    <string name="rent_date">Rent Date</string>
+    <string name="return_date">Return Date</string>
+    <string name="history_ws">rent/userRents</string>
+    <string name="new_movie_category">New movie category</string>
 </resources>

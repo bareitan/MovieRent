@@ -35,6 +35,7 @@ public class CategoriesAdminActivity extends AppCompatActivity {
     FloatingActionButton addButton;
     CategoriesAdapter adapter;
     RecyclerView categoriesRV;
+    AddCategoryTask mAddCategoryTask;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,7 +44,7 @@ public class CategoriesAdminActivity extends AppCompatActivity {
 
 
         categoriesRV.setLayoutManager(new LinearLayoutManager(this));
-        new GetCategoriesTask().execute();
+        updateCategories();
 
         addButton = (FloatingActionButton) findViewById(R.id.add_button);
         addButton.setOnClickListener(new View.OnClickListener(){
@@ -59,9 +60,9 @@ public class CategoriesAdminActivity extends AppCompatActivity {
                 dialogBuilder.setMessage("Enter a new category name");
                 dialogBuilder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
-                        Toast.makeText(getBaseContext(), "New Category name: " + edt.getText().toString(), Toast.LENGTH_SHORT).show();
-                        categories.add(new Category(0,edt.getText().toString()));
-                        adapter.notifyDataSetChanged();
+
+                        new AddCategoryTask(edt.getText().toString()).execute();
+
                     }
                 });
                 dialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -77,6 +78,11 @@ public class CategoriesAdminActivity extends AppCompatActivity {
 
 
     }
+
+    public void updateCategories(){
+        new GetCategoriesTask().execute();
+    }
+
     public class GetCategoriesTask extends AsyncTask<Void, Void, Integer> {
         String downloadUri;
         @Override
@@ -87,6 +93,100 @@ public class CategoriesAdminActivity extends AppCompatActivity {
             try {
                 Uri builtUri = Uri.parse(RENT_WS).buildUpon()
                         .appendEncodedPath(ALL_CATEGORIES_WS)
+                        .build();
+
+                URL url = null;
+                try {
+                    url = new URL(builtUri.toString());
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
+                downloadUri = url.toString();
+            } catch(Exception e){
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        protected Integer doInBackground(Void... params) {
+
+            Integer result = 0;
+            HttpURLConnection urlConnection;
+            try {
+                URL url = new URL(downloadUri);
+                urlConnection = (HttpURLConnection) url.openConnection();
+                int statusCode = urlConnection.getResponseCode();
+
+                // 200 represents HTTP OK
+                if (statusCode == 200) {
+                    BufferedReader r = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                    StringBuilder response = new StringBuilder();
+                    String line;
+                    while ((line = r.readLine()) != null) {
+                        response.append(line);
+                    }
+                    parseResult(response.toString());
+                    result = 1; // Successful
+                } else {
+                    result = 0; //"Failed to fetch data!";
+                }
+            } catch (Exception e) {
+                Log.d(TAG, e.getLocalizedMessage());
+            }
+            return result; //"Failed to fetch data!";
+        }
+
+        @Override
+        protected void onPostExecute(Integer result) {
+
+            if (result == 1) {
+
+                    Log.d("UPDATE_MOVIES:", "response = " + result.toString());
+                    adapter = new CategoriesAdapter(CategoriesAdminActivity.this, categories);
+                    categoriesRV.setAdapter(adapter);
+
+
+            } else {
+                Toast.makeText(getBaseContext(), "Failed to fetch data!", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        private void parseResult(String result) {
+            try {
+                JSONObject response = new JSONObject(result);
+                JSONArray categoriesJSONArray = response.optJSONArray("Categories");
+                categories = new ArrayList<>();
+
+                for (int i = 0; i < categoriesJSONArray.length(); i++) {
+                    JSONObject categoryJSON = categoriesJSONArray.optJSONObject(i);
+                    Category category = new Category();
+                    category.setId(categoryJSON.optInt("categoryID"));
+                    category.setName(categoryJSON.optString("categoryName"));
+                    categories.add(category);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+    public class AddCategoryTask extends AsyncTask<Void, Void, Integer> {
+        String downloadUri;
+        String newCategoryName;
+
+        public AddCategoryTask(String categoryName) {
+            this.newCategoryName = categoryName;
+        }
+        @Override
+        protected void onPreExecute() {
+
+            String RENT_WS = getString(R.string.ws);
+            String ADD_CATEGORIES_WS = getString(R.string.add_categories_ws);
+            try {
+                Uri builtUri = Uri.parse(RENT_WS).buildUpon()
+                        .appendEncodedPath(ADD_CATEGORIES_WS)
+                        .appendQueryParameter("categoryName",newCategoryName)
                         .build();
 
                 URL url = null;
@@ -118,8 +218,9 @@ public class CategoriesAdminActivity extends AppCompatActivity {
                     while ((line = r.readLine()) != null) {
                         response.append(line);
                     }
-                    parseResult(response.toString());
-                    result = 1; // Successful
+                    JSONObject resultJson = new JSONObject(response.toString());
+                    if(resultJson.optBoolean("added",false))
+                        result=1;
                 } else {
                     result = 0; //"Failed to fetch data!";
                 }
@@ -133,29 +234,11 @@ public class CategoriesAdminActivity extends AppCompatActivity {
         protected void onPostExecute(Integer result) {
 
             if (result == 1) {
-                adapter = new CategoriesAdapter(CategoriesAdminActivity.this, categories);
-                categoriesRV.setAdapter(adapter);
+                updateCategories();
+                Toast.makeText(getBaseContext(), "New Category name: " + newCategoryName, Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(getBaseContext(), "Failed to fetch data!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getBaseContext(), "Failed to add category!", Toast.LENGTH_SHORT).show();
             }
-        }
-    }
-
-    private void parseResult(String result) {
-        try {
-            JSONObject response = new JSONObject(result);
-            JSONArray categoriesJSONArray = response.optJSONArray("Categories");
-            categories = new ArrayList<>();
-
-            for (int i = 0; i < categoriesJSONArray.length(); i++) {
-                JSONObject categoryJSON = categoriesJSONArray.optJSONObject(i);
-                Category category = new Category();
-                category.setId(categoryJSON.optInt("categoryID"));
-                category.setName(categoryJSON.optString("categoryName"));
-                categories.add(category);
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
         }
     }
 }

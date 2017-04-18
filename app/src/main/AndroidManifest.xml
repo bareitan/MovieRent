@@ -33,7 +33,8 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".EditProfileActivity" />
         <activity android:name=".UsersAdminActivity" />
-        <activity android:name=".AddMovieFromTMDBActivity"></activity>
+        <activity android:name=".AddMovieFromTMDBActivity" />
+        <activity android:name=".HistoryActivity"></activity>
     </application>
 
 </manifest>

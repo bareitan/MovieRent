@@ -11,9 +11,11 @@ import android.view.View;
 
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -26,6 +28,10 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+
+import static android.webkit.ConsoleMessage.MessageLevel.LOG;
 
 public class AddMovieActivity extends AppCompatActivity {
     private static final String TAG = "AddMovieActivity";
@@ -37,8 +43,15 @@ public class AddMovieActivity extends AppCompatActivity {
     Button mAddTmdbButton;
     AddMovieTask  mAddMovieTask;
     EditText mThumbUrl;
-    ArrayAdapter spinnerArrayAdapter;
+    ArrayAdapter mSpinnerArrayAdapter;
     ArrayList<Category> categories;
+    ToggleButton mToggleCategory;
+    EditText mNewCategory;
+    GetCategoriesTask getCategoriesTask;
+    MovieItem item;
+    String mode="NEW";
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,20 +61,39 @@ public class AddMovieActivity extends AppCompatActivity {
         mMovieName = (EditText) findViewById(R.id.movie_name);
         mMovieOverview = (EditText) findViewById(R.id.movie_overview);
         mMovieCategorySpinner = (Spinner) findViewById(R.id.movie_category);
-        new GetCategoriesTask().execute();
+
+
         mStock = (EditText) findViewById(R.id.stock);
         mThumbUrl = (EditText) findViewById(R.id.thumb_url);
         mSubmit = (Button) findViewById(R.id.submit);
         mAddTmdbButton = (Button) findViewById(R.id.add_from_tmdb_button);
-        MovieItem item;
+        mNewCategory = (EditText) findViewById(R.id.new_movie_category);
+        mToggleCategory = (ToggleButton) findViewById(R.id.toggleNewCategory);
+        mToggleCategory.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(b){
+                    mMovieCategorySpinner.setVisibility(View.GONE);
+                    mNewCategory.setVisibility(View.VISIBLE);
+                }else {
+                    mMovieCategorySpinner.setVisibility(View.VISIBLE);
+                    mNewCategory.setVisibility(View.GONE);
+                }
+            }
+        });
+
         Intent callerIntent = getIntent();
         if(callerIntent.hasExtra("fetched_movie")){
             item = callerIntent.getParcelableExtra("fetched_movie");
             mMovieName.setText(item.getName());
             mMovieOverview.setText(item.getOverview());
-//            mMovieCategory.setText(item.getCategoryName());
             mThumbUrl.setText(item.getThumbnail());
+            mode="NEW_TMDB";
         }
+        
+
+        getCategoriesTask = new GetCategoriesTask();
+        getCategoriesTask.execute();
 
         mAddTmdbButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -76,9 +108,14 @@ public class AddMovieActivity extends AppCompatActivity {
                 MovieItem movie = new MovieItem();
                 movie.setName(mMovieName.getText().toString());
                 movie.setOverview(mMovieOverview.getText().toString());
-                Category category = (Category) mMovieCategorySpinner.getSelectedItem();
-                movie.setCategoryName(category.getName());
-                movie.setCategoryID(category.getId());
+
+                if(mToggleCategory.isChecked()){
+                    movie.setCategoryName(mNewCategory.getText().toString());
+                }else{
+                    Category category = (Category) mMovieCategorySpinner.getSelectedItem();
+                    movie.setCategoryName(category.getName());
+                }
+
                 movie.setStock(Integer.parseInt(mStock.getText().toString()));
                 movie.setThumbnail(mThumbUrl.getText().toString());
                 addMovie(movie);
@@ -117,13 +154,14 @@ public class AddMovieActivity extends AppCompatActivity {
             String ADD_MOVIE_WS = getString(R.string.add_movie_ws);
             Boolean addedSuccessfully = false;
             String error;
+
             try {
                 Uri builtUri = Uri.parse(RENT_WS).buildUpon()
                         .appendEncodedPath(ADD_MOVIE_WS)
                         .appendQueryParameter("movieName", mMovie.getName())
                         .appendQueryParameter("overview", mMovie.getOverview())
                         .appendQueryParameter("stock", Integer.toString(mMovie.getStock()))
-                        .appendQueryParameter("categoryId", Integer.toString(mMovie.getCategoryID()))
+                        .appendQueryParameter("categoryName", mMovie.getCategoryName())
                         .appendQueryParameter("thumbnail", mMovie.getThumbnail())
                         .build();
                 URL url = null;
@@ -210,13 +248,25 @@ public class AddMovieActivity extends AppCompatActivity {
         protected void onPostExecute(Integer result) {
 
             if (result == 1) {
+                mSpinnerArrayAdapter = new ArrayAdapter(AddMovieActivity.this,R.layout.support_simple_spinner_dropdown_item, categories);
+                mMovieCategorySpinner.setAdapter(mSpinnerArrayAdapter);
+                Log.d("ON_POST_EXECUTE","true");
+                if(item!=null){
+                    int spinnerPosition = mSpinnerArrayAdapter.getPosition(new Category(item.getCategoryID(),item.getCategoryName()));
+                    if(spinnerPosition==-1)
+                    {
+                        mToggleCategory.setChecked(true);
+                        mNewCategory.setText(item.getCategoryName());
+                    }
+                    else{
+                        mMovieCategorySpinner.setSelection(spinnerPosition);
+                    }
 
-
-                spinnerArrayAdapter = new ArrayAdapter(AddMovieActivity.this,android.R.layout.simple_spinner_item, categories);
-                mMovieCategorySpinner.setAdapter(spinnerArrayAdapter);
+                }
             } else {
                 Toast.makeText(getBaseContext(), "Failed to fetch data!", Toast.LENGTH_SHORT).show();
             }
+            getCategoriesTask = null;
         }
     }
 

@@ -4,20 +4,21 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.view.menu.ExpandedMenuView;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ProgressBar;
-import android.widget.TextView;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import org.json.JSONArray;
@@ -39,11 +40,16 @@ public class MoviesActivity extends AppCompatActivity implements MoviesAdapter.L
     private MoviesAdapter adapter;
     private ProgressBar progressBar;
     private SwipeRefreshLayout swipeRefreshLayout;
+    ArrayAdapter spinnerArrayAdapter;
+    ArrayList<Category> categories;
+    Spinner mCategorySpinner;
+    GetCategoriesTask getCategoriesTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_movies);
+
 
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new GridLayoutManager(this,2));
@@ -55,7 +61,7 @@ public class MoviesActivity extends AppCompatActivity implements MoviesAdapter.L
                 new DownloadTask().execute();
             }
         });
-        new DownloadTask().execute();
+
     }
 
     @Override
@@ -68,6 +74,10 @@ public class MoviesActivity extends AppCompatActivity implements MoviesAdapter.L
             case R.id.add_movie:
                 Intent addMovieIntent = new Intent(this, AddMovieActivity.class);
                 startActivity(addMovieIntent);
+                return true;
+            case R.id.rent_history:
+                Intent hisotryIntent = new Intent(this, HistoryActivity.class);
+                startActivity(hisotryIntent);
                 return true;
             case R.id.sign_out:
                 Intent loginIntent = new Intent(this, LoginActivity.class);
@@ -87,6 +97,23 @@ public class MoviesActivity extends AppCompatActivity implements MoviesAdapter.L
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.admin_menu, menu);
         inflater.inflate(R.menu.user_menu, menu);
+
+
+        MenuItem item = menu.findItem(R.id.catgory_spinner);
+        mCategorySpinner = (Spinner) MenuItemCompat.getActionView(item);
+        mCategorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                new DownloadTask().execute();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+        getCategoriesTask = new GetCategoriesTask();
+        getCategoriesTask.execute();
         return true;
     }
 
@@ -107,11 +134,13 @@ public class MoviesActivity extends AppCompatActivity implements MoviesAdapter.L
 
             String RENT_WS = getString(R.string.ws);
             String MOVIES_WS = getString(R.string.all_movies_ws);
+            String selectedCategory = ((Category)mCategorySpinner.getSelectedItem()).getName();
             try {
                 Uri builtUri = Uri.parse(RENT_WS).buildUpon()
                         .appendEncodedPath(MOVIES_WS)
+                        .appendPath(selectedCategory)
                         .build();
-
+                Log.d("URI: ", builtUri.toString());
                 URL url = null;
                 try {
                     url = new URL(builtUri.toString());
@@ -187,4 +216,90 @@ public class MoviesActivity extends AppCompatActivity implements MoviesAdapter.L
             e.printStackTrace();
         }
     }
+
+    public class GetCategoriesTask extends AsyncTask<Void, Void, Integer> {
+        String downloadUri;
+        @Override
+        protected void onPreExecute() {
+
+            String RENT_WS = getString(R.string.ws);
+            String ALL_CATEGORIES_WS = getString(R.string.all_categories_ws);
+            try {
+                Uri builtUri = Uri.parse(RENT_WS).buildUpon()
+                        .appendEncodedPath(ALL_CATEGORIES_WS)
+                        .build();
+
+                URL url = null;
+                try {
+                    url = new URL(builtUri.toString());
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
+                downloadUri = url.toString();
+            } catch(Exception e){
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        protected Integer doInBackground(Void... params) {
+            Integer result = 0;
+            HttpURLConnection urlConnection;
+            try {
+                URL url = new URL(downloadUri);
+                urlConnection = (HttpURLConnection) url.openConnection();
+                int statusCode = urlConnection.getResponseCode();
+
+                // 200 represents HTTP OK
+                if (statusCode == 200) {
+                    BufferedReader r = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                    StringBuilder response = new StringBuilder();
+                    String line;
+                    while ((line = r.readLine()) != null) {
+                        response.append(line);
+                    }
+                    parseCategoires(response.toString());
+                    result = 1; // Successful
+                } else {
+                    result = 0; //"Failed to fetch data!";
+                }
+            } catch (Exception e) {
+                Log.d(TAG, e.getLocalizedMessage());
+            }
+            return result; //"Failed to fetch data!";
+        }
+
+        @Override
+        protected void onPostExecute(Integer result) {
+
+            if (result == 1) {
+                spinnerArrayAdapter = new ArrayAdapter(MoviesActivity.this,R.layout.support_simple_spinner_dropdown_item, categories);
+                mCategorySpinner.setAdapter(spinnerArrayAdapter);
+            } else {
+                Toast.makeText(getBaseContext(), "Failed to fetch categories!", Toast.LENGTH_SHORT).show();
+            }
+            getCategoriesTask = null;
+            new DownloadTask().execute();
+        }
+    }
+
+    private void parseCategoires(String result) {
+        try {
+            JSONObject response = new JSONObject(result);
+            JSONArray categoriesJSONArray = response.optJSONArray("Categories");
+            categories = new ArrayList<>();
+
+            for (int i = 0; i < categoriesJSONArray.length(); i++) {
+                JSONObject categoryJSON = categoriesJSONArray.optJSONObject(i);
+                Category category = new Category();
+                category.setId(categoryJSON.optInt("categoryID"));
+                category.setName(categoryJSON.optString("categoryName"));
+                categories.add(category);
+            }
+            categories.add(0,new Category(-1,"All"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
 }

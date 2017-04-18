@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context="com.example.bareitan.movierent.AddMovieActivity">
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -14,64 +15,74 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/movieNameTV"
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <EditText
+                    android:id="@+id/movie_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/movie_name" />
+            </android.support.design.widget.TextInputLayout>
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <EditText
+                    android:id="@+id/movie_overview"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/movie_overview"
+                    android:inputType="textMultiLine"/>
+            </android.support.design.widget.TextInputLayout>
+
+            <ToggleButton
+                android:id="@+id/toggleNewCategory"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/movie_name" />
-
-            <EditText
-                android:id="@+id/movie_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:hint="@string/movie_name" />
-
-            <TextView
-                android:id="@+id/movieOverviewTV"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/movie_overview"/>
-
-            <EditText
-                android:id="@+id/movie_overview"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:hint="@string/movie_overview"
-                android:inputType="textMultiLine"/>
-
+                android:textOff="Existing category"
+                android:textOn="New Category"
+                android:text="ToggleButton" />
             <Spinner
                 android:id="@+id/movie_category"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content" />
-
-
-            <TextView
-                android:id="@+id/stockTV"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/movie_stock" />
+                android:visibility="visible"/>
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <EditText
+                    android:id="@+id/new_movie_category"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    android:hint="@string/new_movie_category"/>
+            </android.support.design.widget.TextInputLayout>
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <EditText
+                    android:id="@+id/stock"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/movie_stock"
+                    android:inputType="numberSigned"
+                    android:text="0" />
+            </android.support.design.widget.TextInputLayout>
 
-            <EditText
-                android:id="@+id/stock"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:hint="@string/movie_stock"
-                android:inputType="numberSigned"
-                android:text="0" />
 
 
-            <TextView
-                android:id="@+id/thumb_urltext"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/thumb_url" />
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <EditText
+                    android:id="@+id/thumb_url"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/thumb_url"
+                    android:inputType="text" />
+            </android.support.design.widget.TextInputLayout>
 
-            <EditText
-                android:id="@+id/thumb_url"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:hint="@string/thumb_url"
-                android:inputType="text" />
+
 
             <Button
                 android:id="@+id/submit"
@@ -80,6 +91,7 @@
                 android:text="@string/update_movie" />
         </LinearLayout>
     </ScrollView>
+
 
 
 

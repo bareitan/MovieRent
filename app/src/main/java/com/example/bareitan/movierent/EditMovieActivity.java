@@ -48,6 +48,8 @@ public class EditMovieActivity extends AppCompatActivity {
         mMovieName.setText(movie.getName());
         mMovieOverview.setText(movie.getOverview());
         mStock.setText(String.valueOf(movie.getStock()));
+        mThumbUrl.setText(movie.getThumbnail());
+
 
         mSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
