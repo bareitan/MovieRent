@@ -6,4 +6,5 @@
         android:id="@+id/delete_movie"/>
     <item android:title="@string/edit_movie"
         android:id="@+id/edit_movie"/>
+
 </menu>

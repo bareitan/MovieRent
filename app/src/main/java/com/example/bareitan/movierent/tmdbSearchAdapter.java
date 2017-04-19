@@ -150,6 +150,7 @@ public class tmdbSearchAdapter extends RecyclerView.Adapter<tmdbSearchAdapter.Vi
                     MovieItem resultMovie = parseSearchOneResult(response.toString());
                     Intent addMovieIntent = new Intent(context, AddMovieActivity.class);
                     addMovieIntent.putExtra("fetched_movie",resultMovie);
+                    addMovieIntent.putExtra("MODE","NEW_TMDB");
                     context.startActivity(addMovieIntent);
                     result = 1;
                 } else {

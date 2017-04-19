@@ -6,6 +6,8 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.InputFilter;
+import android.text.Spanned;
 import android.util.Log;
 import android.view.View;
 
@@ -83,14 +85,22 @@ public class AddMovieActivity extends AppCompatActivity {
         });
 
         Intent callerIntent = getIntent();
+        if(callerIntent.hasExtra("MODE")){
+            mode = callerIntent.getStringExtra("MODE");
+            if(mode.equals("NEW_TMDB")){
+                mAddTmdbButton.setVisibility(View.GONE);
+            }else if(mode.equals("EDIT")){
+                mAddTmdbButton.setVisibility(View.GONE);
+                mSubmit.setText(R.string.update);
+            }
+        }
         if(callerIntent.hasExtra("fetched_movie")){
             item = callerIntent.getParcelableExtra("fetched_movie");
             mMovieName.setText(item.getName());
             mMovieOverview.setText(item.getOverview());
             mThumbUrl.setText(item.getThumbnail());
-            mode="NEW_TMDB";
+            mStock.setText(String.valueOf(item.getStock()));
         }
-        
 
         getCategoriesTask = new GetCategoriesTask();
         getCategoriesTask.execute();
@@ -105,30 +115,80 @@ public class AddMovieActivity extends AppCompatActivity {
         mSubmit.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view) {
-                MovieItem movie = new MovieItem();
-                movie.setName(mMovieName.getText().toString());
-                movie.setOverview(mMovieOverview.getText().toString());
+                if(!validateInput(mode)) {
+                    MovieItem movie = new MovieItem();
+                    if (mode.equals("EDIT")) {
+                        movie.setId(item.getId());
+                    }
+                    movie.setName(mMovieName.getText().toString());
+                    movie.setOverview(mMovieOverview.getText().toString());
 
-                if(mToggleCategory.isChecked()){
-                    movie.setCategoryName(mNewCategory.getText().toString());
-                }else{
-                    Category category = (Category) mMovieCategorySpinner.getSelectedItem();
-                    movie.setCategoryName(category.getName());
+                    if (mToggleCategory.isChecked()) {
+                        movie.setCategoryName(mNewCategory.getText().toString());
+                    } else {
+                        Category category = (Category) mMovieCategorySpinner.getSelectedItem();
+                        movie.setCategoryName(category.getName());
+                    }
+
+                    movie.setStock(Integer.parseInt(mStock.getText().toString()));
+                    movie.setThumbnail(mThumbUrl.getText().toString());
+                    addMovie(movie);
                 }
-
-                movie.setStock(Integer.parseInt(mStock.getText().toString()));
-                movie.setThumbnail(mThumbUrl.getText().toString());
-                addMovie(movie);
-                Toast.makeText(AddMovieActivity.this, "The movie was added successfully.", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(getBaseContext(),MoviesActivity.class);
-                startActivity(intent);
-                finish();
 
             }
         });
 
 
 
+    }
+
+    private boolean validateInput(String mode) {
+        Boolean errors = false;
+        mNewCategory.setError(null);
+        mThumbUrl.setError(null);
+        mMovieOverview.setError(null);
+        mMovieName.setError(null);
+        mStock.setError(null);
+
+        int stock = Integer.parseInt(mStock.getText().toString());
+        View focusView = null;
+
+            if(stock < 1)
+            {
+                errors=true;
+                mStock.setError("Stock must be greater than 0.");
+                focusView = mStock;
+            }
+
+        if(mToggleCategory.isChecked() && mNewCategory.getText().toString().isEmpty())
+        {
+            errors = true;
+            mNewCategory.setError("Category is mandatory.");
+            focusView = mNewCategory;
+        }
+        if(mThumbUrl.getText().toString().isEmpty())
+        {
+            errors = true;
+            mThumbUrl.setError("Thumb url is mandatory");
+            focusView = mThumbUrl;
+        }
+
+        if(mMovieOverview.getText().toString().isEmpty())
+        {
+            errors = true;
+            mMovieOverview.setError("Overview is mandatory.");
+            focusView = mMovieOverview;
+        }
+        if (mMovieName.getText().toString().isEmpty())
+        {
+            errors = true;
+            mMovieName.setError("Movie name is mandatory.");
+            focusView = mMovieName;
+        }
+        if(focusView!=null) {
+            focusView.requestFocus();
+        }
+        return errors;
     }
 
     private void addMovie(MovieItem movie) {
@@ -140,6 +200,22 @@ public class AddMovieActivity extends AppCompatActivity {
     }
 
     public class AddMovieTask extends AsyncTask<Void, Void, Boolean> {
+        String error;
+        @Override
+        protected void onPostExecute(Boolean success) {
+            if(success)
+            {
+                Toast.makeText(AddMovieActivity.this, "Done.", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(getBaseContext(), MoviesActivity.class);
+                startActivity(intent);
+                finish();
+            }
+            else
+            {
+                Toast.makeText(AddMovieActivity.this, error, Toast.LENGTH_SHORT).show();
+            }
+            mAddMovieTask = null;
+        }
 
         public final MovieItem mMovie;
 
@@ -152,18 +228,36 @@ public class AddMovieActivity extends AppCompatActivity {
 
             String RENT_WS = getString(R.string.ws);
             String ADD_MOVIE_WS = getString(R.string.add_movie_ws);
-            Boolean addedSuccessfully = false;
-            String error;
+            String UPDATE_MOVIE_WS = getString(R.string.update_movie_ws);
+            Boolean successfully = false;
+
+            Uri builtUri;
 
             try {
-                Uri builtUri = Uri.parse(RENT_WS).buildUpon()
-                        .appendEncodedPath(ADD_MOVIE_WS)
-                        .appendQueryParameter("movieName", mMovie.getName())
-                        .appendQueryParameter("overview", mMovie.getOverview())
-                        .appendQueryParameter("stock", Integer.toString(mMovie.getStock()))
-                        .appendQueryParameter("categoryName", mMovie.getCategoryName())
-                        .appendQueryParameter("thumbnail", mMovie.getThumbnail())
-                        .build();
+                if(mode.equals("EDIT"))
+                {
+                    builtUri = Uri.parse(RENT_WS).buildUpon()
+                            .appendEncodedPath(UPDATE_MOVIE_WS)
+                            .appendQueryParameter("movieName", mMovie.getName())
+                            .appendQueryParameter("overview", mMovie.getOverview())
+                            .appendQueryParameter("stock", Integer.toString(mMovie.getStock()))
+                            .appendQueryParameter("categoryName", mMovie.getCategoryName())
+                            .appendQueryParameter("thumbnail", mMovie.getThumbnail())
+                            .appendQueryParameter("movieId", mMovie.getId())
+                            .build();
+                }
+                else
+                {
+                    builtUri = Uri.parse(RENT_WS).buildUpon()
+                            .appendEncodedPath(ADD_MOVIE_WS)
+                            .appendQueryParameter("movieName", mMovie.getName())
+                            .appendQueryParameter("overview", mMovie.getOverview())
+                            .appendQueryParameter("stock", Integer.toString(mMovie.getStock()))
+                            .appendQueryParameter("categoryName", mMovie.getCategoryName())
+                            .appendQueryParameter("thumbnail", mMovie.getThumbnail())
+                            .build();
+                }
+
                 URL url = null;
                 HttpURLConnection urlConnection = null;
                 try {
@@ -176,19 +270,23 @@ public class AddMovieActivity extends AppCompatActivity {
                         response.append(line);
                     }
                     JSONObject responseJSON = new JSONObject(response.toString());
-                    addedSuccessfully = responseJSON.optBoolean("addedSuccessfully");
                     error = responseJSON.optString("error");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                    if(error!="")
+                    {
+                        successfully=false;
+                    }
+                    successfully = responseJSON.optBoolean("operationStatus");
+
+
+                } catch (Exception e) {
+                    error = e.getLocalizedMessage();
                 } finally {
                     urlConnection.disconnect();
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                error = e.getLocalizedMessage();
             }
-            return addedSuccessfully;
+            return successfully;
         }
     }
 
@@ -288,5 +386,5 @@ public class AddMovieActivity extends AppCompatActivity {
         }
     }
 
-}
 
+}

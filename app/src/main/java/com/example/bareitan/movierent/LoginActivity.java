@@ -58,10 +58,12 @@ public class LoginActivity extends AppCompatActivity {
     private CheckBox mSaveDetailsCheckBox;
 
     public static final String PREFS_LOGIN = "LoginPrefsFile";
+    public static final String PREFS_ADMIN = "AdminPrefsFile";
     private static final String PREF_EMAIL = "email";
     private static final String PREF_PASSWORD = "password";
     private static final String PREF_REMEMBER = "remember";
     private static final String PREF_USER_ID = "userid";
+    private static final String PREF_IS_ADMIN = "isAdmin";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -241,6 +243,7 @@ public class LoginActivity extends AppCompatActivity {
         private final String mEmail;
         private final String mPassword;
         private int mUserId = -1;
+        private boolean mIsAdmin = false;
 
         UserLoginTask(String email, String password) {
             mEmail = email;
@@ -275,8 +278,10 @@ public class LoginActivity extends AppCompatActivity {
                 LoginResponse loginResponse = new Gson().fromJson(r,LoginResponse.class);
                 Log.e("GET_USER",loginResponse.loginSucceeded.toString());
                 mUserId = loginResponse.userID;
-                if(loginResponse.loginSucceeded)
+                if(loginResponse.loginSucceeded) {
+                    mIsAdmin = loginResponse.isAdmin;
                     return true;
+                }
                 else
                     return false;
 
@@ -292,6 +297,10 @@ public class LoginActivity extends AppCompatActivity {
             showProgress(false);
 
             if (success) {
+                getSharedPreferences(PREFS_ADMIN,MODE_PRIVATE)
+                        .edit()
+                        .putBoolean(PREF_IS_ADMIN,mIsAdmin)
+                        .commit();
                 if(mSaveDetailsCheckBox.isChecked())
                 {
                     getSharedPreferences(PREFS_LOGIN,MODE_PRIVATE)
@@ -300,6 +309,7 @@ public class LoginActivity extends AppCompatActivity {
                             .putString(PREF_PASSWORD, mPassword)
                             .putBoolean(PREF_REMEMBER, mSaveDetailsCheckBox.isChecked())
                             .putInt(PREF_USER_ID, mUserId)
+                            .putBoolean(PREF_IS_ADMIN,mIsAdmin)
                             .commit();
                 } else {
                     getSharedPreferences(PREFS_LOGIN,MODE_PRIVATE)

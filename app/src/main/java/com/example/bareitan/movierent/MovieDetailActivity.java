@@ -2,38 +2,31 @@ package com.example.bareitan.movierent;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Movie;
-import android.media.Image;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 public class MovieDetailActivity extends AppCompatActivity {
@@ -54,7 +47,36 @@ public class MovieDetailActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
 
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.movie_details_menu, menu);
+        String PREFS_ADMIN = "AdminPrefsFile";
+        String PREF_IS_ADMIN = "isAdmin";
+
+        SharedPreferences pref = getSharedPreferences(PREFS_ADMIN,MODE_PRIVATE);
+        boolean isAdmin = pref.getBoolean(PREF_IS_ADMIN, false);
+        if(isAdmin)
+            inflater.inflate(R.menu.movie_details_admin_menu, menu);
+        inflater.inflate(R.menu.movie_details_user_menu, menu);
+
+        MenuItem actionViewItem = menu.findItem(R.id.rent_movie);
+
+        View v = MenuItemCompat.getActionView(actionViewItem);
+
+        mRentMovieSwitch = (Switch) v.findViewById(R.id.switchCustomAction);
+        mRentMovieSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(!mReturnRentError) {
+                    if (b) {
+                        mRentTask = new RentMovieTask();
+                        mRentTask.execute(movie.getId().toString());
+
+                    } else {
+                        mReturnTask = new ReturnMovieTask();
+                        mReturnTask.execute(mRentID);
+                    }
+                }
+                mReturnRentError=false;
+            }
+        });
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -66,8 +88,9 @@ public class MovieDetailActivity extends AppCompatActivity {
                 mDeleteTask.execute(movie.getId());
                 return true;
             case R.id.edit_movie:
-                Intent editMovieIntent = new Intent(this, EditMovieActivity.class);
-                editMovieIntent.putExtra("movie", movie);
+                Intent editMovieIntent = new Intent(this, AddMovieActivity.class);
+                editMovieIntent.putExtra("fetched_movie", movie);
+                editMovieIntent.putExtra("MODE","EDIT");
                 startActivity(editMovieIntent);
                 return true;
             default:
@@ -84,7 +107,7 @@ public class MovieDetailActivity extends AppCompatActivity {
         mMovieOverviewTV = (TextView)findViewById(R.id.movie_overview);
         mMovieCategoryTV = (TextView)findViewById(R.id.movie_category);
         mThumbnail = (ImageView) findViewById(R.id.thumbnail);
-        mRentMovieSwitch = (Switch) findViewById(R.id.rent_movie);
+        //mRentMovieSwitch = (Switch) findViewById(R.id.rent_movie);
 
         Intent caller = getIntent();
         movie = caller.getParcelableExtra("movie");
@@ -106,22 +129,7 @@ public class MovieDetailActivity extends AppCompatActivity {
         mIsRentedTask = new IsRentedTask();
         mIsRentedTask.execute();
 
-        mRentMovieSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if(!mReturnRentError) {
-                    if (b) {
-                        mRentTask = new RentMovieTask();
-                        mRentTask.execute(movie.getId().toString());
 
-                    } else {
-                        mReturnTask = new ReturnMovieTask();
-                        mReturnTask.execute(mRentID);
-                    }
-                }
-                mReturnRentError=false;
-            }
-        });
     }
 
     public class MovieDeleteTask extends AsyncTask<String, Void, Boolean> {

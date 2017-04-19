@@ -2,6 +2,7 @@ package com.example.bareitan.movierent;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v4.view.MenuItemCompat;
@@ -66,6 +67,7 @@ public class MoviesActivity extends AppCompatActivity implements MoviesAdapter.L
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+
         switch(item.getItemId()) {
             case R.id.categories_admin:
                 Intent manageCategoriesIntent = new Intent(this, CategoriesAdminActivity.class);
@@ -94,8 +96,17 @@ public class MoviesActivity extends AppCompatActivity implements MoviesAdapter.L
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+
+        String PREFS_ADMIN = "AdminPrefsFile";
+        String PREF_IS_ADMIN = "isAdmin";
+
+        SharedPreferences pref = getSharedPreferences(PREFS_ADMIN,MODE_PRIVATE);
+        boolean isAdmin = pref.getBoolean(PREF_IS_ADMIN, false);
+
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.admin_menu, menu);
+        if(isAdmin)
+            inflater.inflate(R.menu.admin_menu, menu);
+
         inflater.inflate(R.menu.user_menu, menu);
 
 
@@ -128,6 +139,7 @@ public class MoviesActivity extends AppCompatActivity implements MoviesAdapter.L
 
     public class DownloadTask extends AsyncTask<Void, Void, Integer>{
         String downloadUri;
+        String error;
         @Override
         protected void onPreExecute() {
             progressBar.setVisibility(View.VISIBLE);
@@ -189,33 +201,39 @@ public class MoviesActivity extends AppCompatActivity implements MoviesAdapter.L
                 adapter = new MoviesAdapter(MoviesActivity.this, movieItemList,MoviesActivity.this);
                 mRecyclerView.setAdapter(adapter);
             } else {
-                Toast.makeText(MoviesActivity.this, "Failed to fetch data!", Toast.LENGTH_SHORT).show();
+                if(error !="")
+                    Toast.makeText(MoviesActivity.this, error, Toast.LENGTH_SHORT).show();
+                else
+                    Toast.makeText(MoviesActivity.this, "Failed to fetch data!", Toast.LENGTH_SHORT).show();
             }
             swipeRefreshLayout.setRefreshing(false);
         }
-    }
 
-    private void parseResult(String result) {
-        try {
-            JSONObject response = new JSONObject(result);
-            JSONArray movies = response.optJSONArray("Movies");
-            movieItemList = new ArrayList<>();
+        private void parseResult(String result) {
+            try {
+                JSONObject response = new JSONObject(result);
+                JSONArray movies = response.optJSONArray("Movies");
+                error = response.optString("error");
+                movieItemList = new ArrayList<>();
 
-            for (int i = 0; i < movies.length(); i++) {
-                JSONObject movie = movies.optJSONObject(i);
-                MovieItem item = new MovieItem();
-                item.setId(movie.optString("movieID"));
-                item.setName(movie.optString("movieName"));
-                item.setOverview(movie.optString("overview"));
-                item.setCategoryName(movie.optString("categoryName"));
-                item.setThumbnail(movie.optString("thumbnail"));
-                item.setStock(movie.optInt("stock"));
-                movieItemList.add(item);
+                for (int i = 0; i < movies.length(); i++) {
+                    JSONObject movie = movies.optJSONObject(i);
+                    MovieItem item = new MovieItem();
+                    item.setId(movie.optString("movieID"));
+                    item.setName(movie.optString("movieName"));
+                    item.setOverview(movie.optString("overview"));
+                    item.setCategoryName(movie.optString("categoryName"));
+                    item.setThumbnail(movie.optString("thumbnail"));
+                    item.setStock(movie.optInt("stock"));
+                    movieItemList.add(item);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
         }
     }
+
+
 
     public class GetCategoriesTask extends AsyncTask<Void, Void, Integer> {
         String downloadUri;

@@ -1,6 +1,7 @@
 package com.example.bareitan.movierent;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -78,6 +79,16 @@ public class CategoriesAdminActivity extends AppCompatActivity {
 
 
     }
+
+    @Override
+    public void onBackPressed() {
+
+        Intent i = new Intent(this, MoviesActivity.class);
+        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(i);
+        finish();
+    }
+
 
     public void updateCategories(){
         new GetCategoriesTask().execute();

@@ -12,29 +12,37 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity" />
-        <activity android:name=".MoviesActivity" />
+        <activity android:name=".MoviesActivity"
+            android:parentActivityName=".LoginActivity"/>
         <activity
             android:name=".LoginActivity"
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".RegisterActivity" />
-        <activity android:name=".MovieDetailActivity" />
-        <activity android:name=".AddMovieActivity" />
-        <activity android:name=".EditMovieActivity" />
+        <activity android:name=".RegisterActivity"
+            android:parentActivityName=".LoginActivity"/>
+        <activity android:name=".MovieDetailActivity"
+            android:parentActivityName=".MoviesActivity"/>
+        <activity android:name=".AddMovieActivity"
+            android:parentActivityName=".MoviesActivity"/>
+        <activity android:name=".EditMovieActivity"
+            android:parentActivityName=".MoviesActivity"/>
         <activity
             android:name=".CategoriesAdminActivity"
             android:label="@string/title_activity_categories_admin"
+            android:parentActivityName=".MoviesActivity"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".EditProfileActivity" />
-        <activity android:name=".UsersAdminActivity" />
-        <activity android:name=".AddMovieFromTMDBActivity" />
-        <activity android:name=".HistoryActivity"></activity>
+        <activity android:name=".EditProfileActivity"
+            android:parentActivityName=".MoviesActivity"/>
+        <activity android:name=".UsersAdminActivity"
+            android:parentActivityName=".MoviesActivity"/>
+        <activity android:name=".AddMovieFromTMDBActivity"
+            android:parentActivityName=".AddMovieActivity"/>
+        <activity android:name=".HistoryActivity"
+            android:parentActivityName=".MoviesActivity"></activity>
     </application>
 
 </manifest>
