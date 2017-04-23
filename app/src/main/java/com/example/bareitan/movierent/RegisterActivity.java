@@ -4,9 +4,11 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -29,21 +31,28 @@ import java.net.URL;
 
 
 public class RegisterActivity extends AppCompatActivity {
+    public static final String PREFS_LOGIN = "LoginPrefsFile";
+    public static final String PREFS_ADMIN = "AdminPrefsFile";
+    private static final String PREF_EMAIL = "email";
+    private static final String PREF_PASSWORD = "password";
+    private static final String PREF_REMEMBER = "remember";
+    private static final String PREF_USER_ID = "userid";
+    private static final String PREF_IS_ADMIN = "isAdmin";
+    String RENT_WS;
     private UserRegisterTask mRegisterTask = null;
-
     private EditText mEmailTV;
     private EditText mPasswordTV;
     private EditText mFirstNameTV;
     private EditText mLastNameTV;
     private View mProgressView;
     private View mRegisterFormView;
-    private Button mRegisterButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
-
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        RENT_WS = sharedPref.getString("ws_uri", "");
         mEmailTV = (EditText) findViewById(R.id.email);
         mPasswordTV = (EditText) findViewById(R.id.password);
         mFirstNameTV = (EditText) findViewById(R.id.first_name);
@@ -75,8 +84,8 @@ public class RegisterActivity extends AppCompatActivity {
 
         String email = mEmailTV.getText().toString();
         String password = mPasswordTV.getText().toString();
-        String firstName = mPasswordTV.getText().toString();
-        String lastName = mPasswordTV.getText().toString();
+        String firstName = mFirstNameTV.getText().toString();
+        String lastName = mLastNameTV.getText().toString();
 
         boolean cancel = false;
         View focusView = null;
@@ -190,6 +199,14 @@ public class RegisterActivity extends AppCompatActivity {
             showProgress(false);
 
             if(success) {
+                getSharedPreferences(PREFS_LOGIN, MODE_PRIVATE)
+                        .edit()
+                        .putString(PREF_EMAIL, mEmail)
+                        .putString(PREF_PASSWORD, mPassword)
+                        .remove(PREF_USER_ID)
+                        .putBoolean(PREF_IS_ADMIN, false)
+                        .putBoolean(PREF_REMEMBER, false)
+                        .commit();
                 Intent loginIntent = new Intent(getApplicationContext(),LoginActivity.class);
                 startActivity(loginIntent);
             } else {
@@ -205,7 +222,6 @@ public class RegisterActivity extends AppCompatActivity {
 
         @Override
         protected Boolean doInBackground(Void... voids) {
-            String RENT_WS = getString(R.string.ws);
             String REGISTER_WS = getString(R.string.register_ws);
 
             Uri builtUri = Uri.parse(RENT_WS).buildUpon()
@@ -239,11 +255,7 @@ public class RegisterActivity extends AppCompatActivity {
                 urlConnection.disconnect();
             }
 
-            if(registeredSuccessfully)
-                return true;
-            else {
-                return false;
-            }
+            return registeredSuccessfully;
         }
     }
 }

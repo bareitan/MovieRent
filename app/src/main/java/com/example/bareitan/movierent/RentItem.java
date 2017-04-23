@@ -1,6 +1,5 @@
 package com.example.bareitan.movierent;
 
-import java.util.Date;
 
 /**
  * Created by bareitan on 18/04/2017.

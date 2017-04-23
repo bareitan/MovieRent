@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -30,19 +31,19 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class MovieDetailActivity extends AppCompatActivity {
+    public MovieItem movie;
     TextView mMovieNameTV;
     TextView mMovieOverviewTV;
     TextView mMovieCategoryTV;
     ImageView mThumbnail;
     Switch mRentMovieSwitch;
-    MovieItem movie;
     MovieDeleteTask mDeleteTask;
     RentMovieTask mRentTask;
     ReturnMovieTask mReturnTask;
     boolean mReturnRentError = false;
     IsRentedTask mIsRentedTask;
     int mRentID;
-
+    String RENT_WS;
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
@@ -77,6 +78,10 @@ public class MovieDetailActivity extends AppCompatActivity {
                 mReturnRentError=false;
             }
         });
+
+
+        mIsRentedTask = new IsRentedTask();
+        mIsRentedTask.execute();
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -102,6 +107,8 @@ public class MovieDetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_movie_detail);
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        RENT_WS = sharedPref.getString("ws_uri", "");
 
         mMovieNameTV = (TextView)findViewById(R.id.movie_name);
         mMovieOverviewTV = (TextView)findViewById(R.id.movie_overview);
@@ -126,9 +133,15 @@ public class MovieDetailActivity extends AppCompatActivity {
         }
 
 
-        mIsRentedTask = new IsRentedTask();
-        mIsRentedTask.execute();
+        CommentsFragment commentsFragment = new CommentsFragment();
 
+        // In case this activity was started with special instructions from an
+        // Intent, pass the Intent's extras to the fragment as arguments
+
+
+        // Add the fragment to the 'fragment_container' FrameLayout
+        getSupportFragmentManager().beginTransaction()
+                .add(R.id.fragment_container, commentsFragment).commit();
 
     }
 
@@ -139,7 +152,6 @@ public class MovieDetailActivity extends AppCompatActivity {
         @Override
         protected Boolean doInBackground(String... params) {
 
-            String RENT_WS = getString(R.string.ws);
             String DELETE_WS = getString(R.string.delete_ws);
             Boolean deleted = false;
             try{
@@ -200,7 +212,6 @@ public class MovieDetailActivity extends AppCompatActivity {
         @Override
         protected Boolean doInBackground(String... params) {
 
-            String RENT_WS = getString(R.string.ws);
             String RENT_MOVIE_WS = getString(R.string.rent_movie_ws);
             Boolean rented = false;
 
@@ -269,7 +280,7 @@ public class MovieDetailActivity extends AppCompatActivity {
         @Override
         protected Boolean doInBackground(Integer... params) {
 
-            String RENT_WS = getString(R.string.ws);
+
             String RETURN_MOVIE_WS= getString(R.string.return_movie_ws);
             Boolean returned = false;
 
@@ -336,7 +347,6 @@ public class MovieDetailActivity extends AppCompatActivity {
         @Override
         protected Boolean doInBackground(Void... params) {
 
-            String RENT_WS = getString(R.string.ws);
             String CHECK__USER_RENT_MOVIE_WS= getString(R.string.check_user_rent_ws);
             Boolean isRented = false;
             SharedPreferences pref = getSharedPreferences("LoginPrefsFile",MODE_PRIVATE);

@@ -1,8 +1,10 @@
 package com.example.bareitan.movierent;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -30,10 +32,13 @@ public class EditMovieActivity extends AppCompatActivity {
     Button mEditButton;
     EditMovieTask  mEditMovieTask;
     EditText mThumbUrl;
+    String RENT_WS;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_movie);
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        RENT_WS = sharedPref.getString("ws_uri", "");
 
         mMovieName = (EditText) findViewById(R.id.movie_name);
         mMovieOverview = (EditText) findViewById(R.id.movie_overview);
@@ -84,7 +89,7 @@ public class EditMovieActivity extends AppCompatActivity {
         @Override
         protected Boolean doInBackground(Void... voids) {
 
-            String RENT_WS = getString(R.string.ws);
+
             String UPDATE_MOVIE_WS = getString(R.string.update_movie_ws);
             Boolean updated = false;
             String error;

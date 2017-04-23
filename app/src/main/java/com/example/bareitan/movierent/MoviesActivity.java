@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -36,20 +37,23 @@ import java.util.List;
 
 public class MoviesActivity extends AppCompatActivity implements MoviesAdapter.ListItemClickListener{
     private static final String TAG = "MoviesActivity";
+    ArrayAdapter spinnerArrayAdapter;
+    ArrayList<Category> categories;
+    Spinner mCategorySpinner;
+    GetCategoriesTask getCategoriesTask;
+    String RENT_WS;
     private List<MovieItem> movieItemList;
     private RecyclerView mRecyclerView;
     private MoviesAdapter adapter;
     private ProgressBar progressBar;
     private SwipeRefreshLayout swipeRefreshLayout;
-    ArrayAdapter spinnerArrayAdapter;
-    ArrayList<Category> categories;
-    Spinner mCategorySpinner;
-    GetCategoriesTask getCategoriesTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_movies);
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        RENT_WS = sharedPref.getString("ws_uri", "");
 
 
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
@@ -137,6 +141,25 @@ public class MoviesActivity extends AppCompatActivity implements MoviesAdapter.L
         startActivity(intent);
     }
 
+    private void parseCategoires(String result) {
+        try {
+            JSONObject response = new JSONObject(result);
+            JSONArray categoriesJSONArray = response.optJSONArray("Categories");
+            categories = new ArrayList<>();
+
+            for (int i = 0; i < categoriesJSONArray.length(); i++) {
+                JSONObject categoryJSON = categoriesJSONArray.optJSONObject(i);
+                Category category = new Category();
+                category.setId(categoryJSON.optInt("categoryID"));
+                category.setName(categoryJSON.optString("categoryName"));
+                categories.add(category);
+            }
+            categories.add(0, new Category(-1, "All"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
     public class DownloadTask extends AsyncTask<Void, Void, Integer>{
         String downloadUri;
         String error;
@@ -144,7 +167,6 @@ public class MoviesActivity extends AppCompatActivity implements MoviesAdapter.L
         protected void onPreExecute() {
             progressBar.setVisibility(View.VISIBLE);
 
-            String RENT_WS = getString(R.string.ws);
             String MOVIES_WS = getString(R.string.all_movies_ws);
             String selectedCategory = ((Category)mCategorySpinner.getSelectedItem()).getName();
             try {
@@ -233,14 +255,11 @@ public class MoviesActivity extends AppCompatActivity implements MoviesAdapter.L
         }
     }
 
-
-
     public class GetCategoriesTask extends AsyncTask<Void, Void, Integer> {
         String downloadUri;
         @Override
         protected void onPreExecute() {
 
-            String RENT_WS = getString(R.string.ws);
             String ALL_CATEGORIES_WS = getString(R.string.all_categories_ws);
             try {
                 Uri builtUri = Uri.parse(RENT_WS).buildUpon()
@@ -298,25 +317,6 @@ public class MoviesActivity extends AppCompatActivity implements MoviesAdapter.L
             }
             getCategoriesTask = null;
             new DownloadTask().execute();
-        }
-    }
-
-    private void parseCategoires(String result) {
-        try {
-            JSONObject response = new JSONObject(result);
-            JSONArray categoriesJSONArray = response.optJSONArray("Categories");
-            categories = new ArrayList<>();
-
-            for (int i = 0; i < categoriesJSONArray.length(); i++) {
-                JSONObject categoryJSON = categoriesJSONArray.optJSONObject(i);
-                Category category = new Category();
-                category.setId(categoryJSON.optInt("categoryID"));
-                category.setName(categoryJSON.optString("categoryName"));
-                categories.add(category);
-            }
-            categories.add(0,new Category(-1,"All"));
-        } catch (JSONException e) {
-            e.printStackTrace();
         }
     }
 

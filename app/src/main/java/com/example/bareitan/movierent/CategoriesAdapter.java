@@ -3,8 +3,10 @@ package com.example.bareitan.movierent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.app.AlertDialog;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -31,13 +33,16 @@ import java.util.List;
 public class CategoriesAdapter extends
         RecyclerView.Adapter<CategoriesAdapter.ViewHolder>
 {
+    UpdateCategoryTask mUpdateCategoryTask;
+    String RENT_WS;
     private List<Category> mCategories;
     private Context mContext;
-    UpdateCategoryTask mUpdateCategoryTask;
 
     public CategoriesAdapter(Context context, List<Category> categories) {
         mCategories = categories;
         mContext = context;
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(mContext);
+        RENT_WS = sharedPref.getString("ws_uri", "");
     }
     public Context getContext() {
         return mContext;
@@ -137,7 +142,6 @@ public class CategoriesAdapter extends
         @Override
         protected void onPreExecute() {
 
-            String RENT_WS = mContext.getString(R.string.ws);
             String UPDATE_CATEGORIES_WS = mContext.getString(R.string.update_categories_ws);
             try {
                 Uri builtUri = Uri.parse(RENT_WS).buildUpon()
@@ -213,7 +217,6 @@ public class CategoriesAdapter extends
         @Override
         protected void onPreExecute() {
 
-            String RENT_WS = mContext.getString(R.string.ws);
             String DELETE_CATEGORIES_WS = mContext.getString(R.string.delete_categories_ws);
             try {
                 Uri builtUri = Uri.parse(RENT_WS).buildUpon()

@@ -6,6 +6,7 @@ import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -23,6 +24,9 @@ import android.provider.ContactsContract;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
@@ -48,15 +52,6 @@ import java.net.URL;
 
 public class LoginActivity extends AppCompatActivity {
 
-    private UserLoginTask mAuthTask = null;
-
-    private TextView mEmailView;
-    private EditText mPasswordView;
-    private View mProgressView;
-    private View mLoginFormView;
-    private Button mRegisterButton;
-    private CheckBox mSaveDetailsCheckBox;
-
     public static final String PREFS_LOGIN = "LoginPrefsFile";
     public static final String PREFS_ADMIN = "AdminPrefsFile";
     private static final String PREF_EMAIL = "email";
@@ -64,26 +59,36 @@ public class LoginActivity extends AppCompatActivity {
     private static final String PREF_REMEMBER = "remember";
     private static final String PREF_USER_ID = "userid";
     private static final String PREF_IS_ADMIN = "isAdmin";
+    String RENT_WS;
+    private UserLoginTask mAuthTask = null;
+    private TextView mEmailView;
+    private EditText mPasswordView;
+    private View mProgressView;
+    private View mLoginFormView;
+    private Button mRegisterButton;
+    private CheckBox mSaveDetailsCheckBox;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        RENT_WS = sharedPref.getString("ws_uri", "");
         // Set up the login form.
         mEmailView = (TextView) findViewById(R.id.email);
 
         mPasswordView = (EditText) findViewById(R.id.password);
         mSaveDetailsCheckBox = (CheckBox) findViewById(R.id.remember_user_password);
-        mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-                if (id == R.id.login || id == EditorInfo.IME_NULL) {
-                    attemptLogin();
-                    return true;
-                }
-                return false;
-            }
-        });
+//        mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+//            @Override
+//            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
+//                if (id == R.id.login || id == EditorInfo.IME_NULL) {
+//                    attemptLogin();
+//                    return true;
+//                }
+//                return false;
+//            }
+//        });
 
         Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
         mEmailSignInButton.setOnClickListener(new OnClickListener() {
@@ -122,6 +127,8 @@ public class LoginActivity extends AppCompatActivity {
                 attemptLogin();
             }
         }
+
+
     }
 
 
@@ -221,6 +228,26 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.settings, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.settings:
+                Intent intent = new Intent(this, SettingsActivity.class);
+                startActivity(intent);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
     class LoginResponse {
         public Boolean loginSucceeded;
         public Boolean isAdmin;
@@ -242,6 +269,8 @@ public class LoginActivity extends AppCompatActivity {
 
         private final String mEmail;
         private final String mPassword;
+        int statusCode = -1;
+        String LOGIN_WS = getString(R.string.login_ws);
         private int mUserId = -1;
         private boolean mIsAdmin = false;
 
@@ -253,8 +282,7 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         protected Boolean doInBackground(Void... params) {
 
-            String RENT_WS = getString(R.string.ws);
-            String LOGIN_WS = getString(R.string.login_ws);
+
             try{
                 Uri builtUri = Uri.parse(RENT_WS).buildUpon()
                         .appendEncodedPath(LOGIN_WS)
@@ -268,22 +296,31 @@ public class LoginActivity extends AppCompatActivity {
                 } catch (MalformedURLException e) {
                     e.printStackTrace();
                 }
-                Log.e("GET_USER",builtUri.toString());
+                Log.d("GET_USER", builtUri.toString());
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setConnectTimeout(5000);
+                statusCode = urlConnection.getResponseCode();
 
-                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-                Reader r = new InputStreamReader(in);
+                // 200 represents HTTP OK
+                if (statusCode == 200) {
+
+                    InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+                    Reader r = new InputStreamReader(in);
 
 
-                LoginResponse loginResponse = new Gson().fromJson(r,LoginResponse.class);
-                Log.e("GET_USER",loginResponse.loginSucceeded.toString());
-                mUserId = loginResponse.userID;
-                if(loginResponse.loginSucceeded) {
-                    mIsAdmin = loginResponse.isAdmin;
-                    return true;
-                }
-                else
+                    LoginResponse loginResponse = new Gson().fromJson(r, LoginResponse.class);
+                    Log.e("GET_USER", loginResponse.loginSucceeded.toString());
+                    mUserId = loginResponse.userID;
+                    if (loginResponse.loginSucceeded) {
+                        mIsAdmin = loginResponse.isAdmin;
+                        return true;
+                    } else {
+                        return false;
+                    }
+
+                } else {
                     return false;
+                }
 
             }catch (Exception e){
                 e.printStackTrace();
@@ -316,7 +353,8 @@ public class LoginActivity extends AppCompatActivity {
                             .edit()
                             .remove(PREF_EMAIL)
                             .remove(PREF_PASSWORD)
-                            .putString(PREF_PASSWORD, mPassword)
+                            .putInt(PREF_USER_ID, mUserId)
+                            .putBoolean(PREF_IS_ADMIN, mIsAdmin)
                             .putBoolean(PREF_REMEMBER, mSaveDetailsCheckBox.isChecked())
                             .commit();
                 }
@@ -330,8 +368,13 @@ public class LoginActivity extends AppCompatActivity {
                         .edit()
                         .remove(PREF_USER_ID)
                         .commit();
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
+                if (statusCode != 200) {
+                    Toast.makeText(LoginActivity.this, "Could not connect to web service: " + RENT_WS, Toast.LENGTH_SHORT).show();
+                } else {
+                    mPasswordView.setError(getString(R.string.error_incorrect_password));
+                    mPasswordView.requestFocus();
+                }
+
             }
         }
 

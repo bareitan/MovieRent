@@ -3,6 +3,7 @@ package com.example.bareitan.movierent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -26,6 +27,7 @@ import java.util.List;
 
 public class HistoryActivity extends AppCompatActivity {
     private static final String TAG = "HistoryActivity";
+    String RENT_WS;
     private RecyclerView mRecyclerView;
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
@@ -35,6 +37,8 @@ public class HistoryActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_history);
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        RENT_WS = sharedPref.getString("ws_uri", "");
 
         mRecyclerView = (RecyclerView) findViewById(R.id.rent_rv);
 
@@ -47,12 +51,32 @@ public class HistoryActivity extends AppCompatActivity {
         new GetHistoryTask().execute();
     }
 
+    private void parseResult(String result) {
+        try {
+            JSONObject response = new JSONObject(result);
+            JSONArray rents = response.optJSONArray("RentItems");
+            mRentItemList = new ArrayList<>();
+
+            for (int i = 0; i < rents.length(); i++) {
+                JSONObject rent = rents.optJSONObject(i);
+                RentItem item = new RentItem();
+                item.setMovieName(rent.optString("movieName"));
+                item.setMovieID(rent.optInt("movieID"));
+                item.setRentDate(rent.optString("rentDate"));
+                item.setReturnDate(rent.optString("returnDate"));
+
+                mRentItemList.add(item);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
     public class GetHistoryTask extends AsyncTask<Void, Void, Integer> {
         String downloadUri;
         @Override
         protected void onPreExecute() {
 
-            String RENT_WS = getString(R.string.ws);
             String HISTORY_WS = getString(R.string.history_ws);
 
             String PREFS_LOGIN = "LoginPrefsFile";
@@ -115,27 +139,6 @@ public class HistoryActivity extends AppCompatActivity {
             } else {
                 Toast.makeText(HistoryActivity.this, "Failed to fetch history data!", Toast.LENGTH_SHORT).show();
             }
-        }
-    }
-
-    private void parseResult(String result) {
-        try {
-            JSONObject response = new JSONObject(result);
-            JSONArray rents = response.optJSONArray("RentItems");
-            mRentItemList = new ArrayList<>();
-
-            for (int i = 0; i < rents.length(); i++) {
-                JSONObject rent = rents.optJSONObject(i);
-                RentItem item = new RentItem();
-                item.setMovieName(rent.optString("movieName"));
-                item.setMovieID(rent.optInt("movieID"));
-                item.setRentDate(rent.optString("rentDate"));
-                item.setReturnDate(rent.optString("returnDate"));
-
-                mRentItemList.add(item);
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
         }
     }
 

@@ -1,13 +1,13 @@
 package com.example.bareitan.movierent;
-
+//Activity for adding movies
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.InputFilter;
-import android.text.Spanned;
 import android.util.Log;
 import android.view.View;
 
@@ -24,16 +24,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
-import static android.webkit.ConsoleMessage.MessageLevel.LOG;
 
 public class AddMovieActivity extends AppCompatActivity {
     private static final String TAG = "AddMovieActivity";
@@ -52,8 +48,7 @@ public class AddMovieActivity extends AppCompatActivity {
     GetCategoriesTask getCategoriesTask;
     MovieItem item;
     String mode="NEW";
-
-
+    private String RENT_WS;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -138,6 +133,8 @@ public class AddMovieActivity extends AppCompatActivity {
             }
         });
 
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        RENT_WS = sharedPref.getString("ws_uri", "");
 
 
     }
@@ -199,8 +196,32 @@ public class AddMovieActivity extends AppCompatActivity {
         mAddMovieTask.execute((Void)null);
     }
 
+    private void parseResult(String result) {
+        try {
+            JSONObject response = new JSONObject(result);
+            JSONArray categoriesJSONArray = response.optJSONArray("Categories");
+            categories = new ArrayList<>();
+
+            for (int i = 0; i < categoriesJSONArray.length(); i++) {
+                JSONObject categoryJSON = categoriesJSONArray.optJSONObject(i);
+                Category category = new Category();
+                category.setId(categoryJSON.optInt("categoryID"));
+                category.setName(categoryJSON.optString("categoryName"));
+                categories.add(category);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
     public class AddMovieTask extends AsyncTask<Void, Void, Boolean> {
+        public final MovieItem mMovie;
         String error;
+
+        public AddMovieTask(MovieItem mMovie) {
+            this.mMovie = mMovie;
+        }
+
         @Override
         protected void onPostExecute(Boolean success) {
             if(success)
@@ -217,16 +238,9 @@ public class AddMovieActivity extends AppCompatActivity {
             mAddMovieTask = null;
         }
 
-        public final MovieItem mMovie;
-
-        public AddMovieTask(MovieItem mMovie) {
-            this.mMovie = mMovie;
-        }
-
         @Override
         protected Boolean doInBackground(Void... voids) {
 
-            String RENT_WS = getString(R.string.ws);
             String ADD_MOVIE_WS = getString(R.string.add_movie_ws);
             String UPDATE_MOVIE_WS = getString(R.string.update_movie_ws);
             Boolean successfully = false;
@@ -295,7 +309,6 @@ public class AddMovieActivity extends AppCompatActivity {
         @Override
         protected void onPreExecute() {
 
-            String RENT_WS = getString(R.string.ws);
             String ALL_CATEGORIES_WS = getString(R.string.all_categories_ws);
             try {
                 Uri builtUri = Uri.parse(RENT_WS).buildUpon()
@@ -365,24 +378,6 @@ public class AddMovieActivity extends AppCompatActivity {
                 Toast.makeText(getBaseContext(), "Failed to fetch data!", Toast.LENGTH_SHORT).show();
             }
             getCategoriesTask = null;
-        }
-    }
-
-    private void parseResult(String result) {
-        try {
-            JSONObject response = new JSONObject(result);
-            JSONArray categoriesJSONArray = response.optJSONArray("Categories");
-            categories = new ArrayList<>();
-
-            for (int i = 0; i < categoriesJSONArray.length(); i++) {
-                JSONObject categoryJSON = categoriesJSONArray.optJSONObject(i);
-                Category category = new Category();
-                category.setId(categoryJSON.optInt("categoryID"));
-                category.setName(categoryJSON.optString("categoryName"));
-                categories.add(category);
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
         }
     }
 

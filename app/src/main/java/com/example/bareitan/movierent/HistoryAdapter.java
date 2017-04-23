@@ -22,27 +22,11 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryV
     private List<RentItem> mRentItemList;
     private Context mContext;
 
-    class HistoryViewHolder extends RecyclerView.ViewHolder {
-        protected TextView mMovieName;
-        protected TextView mRentDate;
-        protected TextView mReturnDate;
-        protected CardView mCardView;
-        public HistoryViewHolder(View v) {
-            super(v);
-            mMovieName = (TextView) v.findViewById(R.id.movie_name);
-            mRentDate = (TextView) v.findViewById(R.id.rent_date);
-            mReturnDate = (TextView) v.findViewById(R.id.return_date);
-            mCardView = (CardView) v.findViewById(R.id.card);
-        }
-    }
-
-    // Provide a suitable constructor (depends on the kind of dataset)
     public HistoryAdapter(Context context, List<RentItem> rentData) {
         mContext = context;
         mRentItemList = rentData;
     }
 
-    // Create new views (invoked by the layout manager)
     @Override
     public HistoryViewHolder onCreateViewHolder(ViewGroup parent,
                                                    int viewType) {
@@ -51,7 +35,6 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryV
         return viewHolder;
     }
 
-    // Replace the contents of a view (invoked by the layout manager)
     @Override
     public void onBindViewHolder(HistoryViewHolder holder, int position) {
         RentItem rentItem = mRentItemList.get(position);
@@ -67,9 +50,23 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryV
 
     }
 
-    // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
         return (null != mRentItemList ?  mRentItemList.size() : 0);
+    }
+
+    class HistoryViewHolder extends RecyclerView.ViewHolder {
+        protected TextView mMovieName;
+        protected TextView mRentDate;
+        protected TextView mReturnDate;
+        protected CardView mCardView;
+
+        public HistoryViewHolder(View v) {
+            super(v);
+            mMovieName = (TextView) v.findViewById(R.id.movie_name);
+            mRentDate = (TextView) v.findViewById(R.id.rent_date);
+            mReturnDate = (TextView) v.findViewById(R.id.return_date);
+            mCardView = (CardView) v.findViewById(R.id.card);
+        }
     }
 }

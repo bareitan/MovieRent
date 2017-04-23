@@ -2,9 +2,11 @@ package com.example.bareitan.movierent;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
@@ -37,11 +39,14 @@ public class CategoriesAdminActivity extends AppCompatActivity {
     CategoriesAdapter adapter;
     RecyclerView categoriesRV;
     AddCategoryTask mAddCategoryTask;
+    String RENT_WS;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_categories_admin);
         categoriesRV = (RecyclerView) findViewById(R.id.rvCategories);
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        RENT_WS = sharedPref.getString("ws_uri", "");
 
 
         categoriesRV.setLayoutManager(new LinearLayoutManager(this));
@@ -99,7 +104,6 @@ public class CategoriesAdminActivity extends AppCompatActivity {
         @Override
         protected void onPreExecute() {
 
-            String RENT_WS = getString(R.string.ws);
             String ALL_CATEGORIES_WS = getString(R.string.all_categories_ws);
             try {
                 Uri builtUri = Uri.parse(RENT_WS).buildUpon()
@@ -192,7 +196,6 @@ public class CategoriesAdminActivity extends AppCompatActivity {
         @Override
         protected void onPreExecute() {
 
-            String RENT_WS = getString(R.string.ws);
             String ADD_CATEGORIES_WS = getString(R.string.add_categories_ws);
             try {
                 Uri builtUri = Uri.parse(RENT_WS).buildUpon()

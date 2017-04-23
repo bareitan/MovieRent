@@ -1,24 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android">
-    <item
-        android:id="@+id/search"
-        android:actionViewClass="android.widget.SearchView"
-        android:icon="@drawable/ic_search_black_24dp"
-        android:title="@string/search"
-        app:showAsAction="collapseActionView|ifRoom" />
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
     <item android:id="@+id/rent_history"
         android:title="@string/History"/>
-    <item android:id="@+id/edit_profile"
-        android:title="@string/edit_profile"/>
 
     <item android:id="@+id/sign_out"
         android:title="@string/sign_out"/>
     <item
         android:id="@+id/catgory_spinner"
+        android:background="#ff00"
         android:title="@string/movie_category"
         app:actionViewClass="android.widget.Spinner"
-        android:background="#ff00"
         app:showAsAction="always" />
 
 </menu>
